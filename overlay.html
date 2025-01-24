@@ -1,0 +1,27 @@
+<!doctype html>
+<html>
+  <head>
+    <style>
+      body {
+        background: transparent;
+        overflow: hidden;
+        margin: 0;
+      }
+      video {
+        width: 100%;
+        height: 100%;
+      }
+    </style>
+  </head>
+  <body>
+    <video autoplay preload="auto">
+      <source src="ping-trimmed.webm" type="video/webm" />
+    </video>
+    <script>
+      const video = document.querySelector("video");
+      const audio = new Audio("ping.webm");
+      audio.preload = "auto";
+      video.onplay = () => audio.play();
+    </script>
+  </body>
+</html>

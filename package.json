@@ -1,0 +1,27 @@
+{
+  "name": "mac-ping-overlay",
+  "version": "1.0.0",
+  "description": "Ping overlay for Mac",
+  "main": "main.js",
+  "type": "module",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder"
+  },
+  "build": {
+    "appId": "com.yourname.ping-overlay",
+    "productName": "Ping Overlay",
+    "mac": {
+      "target": "dmg",
+      "category": "public.app-category.utilities"
+    }
+  },
+  "devDependencies": {
+    "electron": "^34.0.1",
+    "electron-builder": "^25.1.8",
+    "prettier": "^3.4.2"
+  },
+  "dependencies": {
+    "electron-store": "^8.1.0"
+  }
+}
