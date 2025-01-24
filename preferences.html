@@ -1,0 +1,189 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Preferences</title>
+    <style>
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+          Helvetica, Arial, sans-serif;
+        padding: 20px;
+        margin: 0;
+        background-color: #ffffff;
+        -webkit-user-select: none;
+      }
+
+      .titlebar {
+        -webkit-app-region: drag;
+        height: 38px;
+        background: #f7f7f7;
+        border-bottom: 1px solid #ddd;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+      }
+
+      .container {
+        max-width: 400px;
+        margin: 48px auto 0;
+        padding: 20px;
+      }
+
+      .preference-group {
+        margin-bottom: 20px;
+      }
+
+      .preference-title {
+        font-weight: 500;
+        margin-bottom: 10px;
+        color: #333;
+      }
+
+      .shortcut-control {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .shortcut-display {
+        flex-grow: 1;
+        padding: 6px 12px;
+        background: #f5f5f5;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        font-family:
+          ui-monospace,
+          SFMono-Regular,
+          SF Mono,
+          Menlo,
+          monospace;
+        color: #333;
+      }
+
+      .shortcut-display.recording {
+        background: #007aff15;
+        border-color: #007aff;
+        color: #007aff;
+      }
+
+      .button-container {
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+        margin-top: 20px;
+      }
+
+      button {
+        padding: 6px 12px;
+        border-radius: 6px;
+        border: 1px solid #ddd;
+        background: #ffffff;
+        font-size: 13px;
+        cursor: pointer;
+      }
+
+      button.primary {
+        background: #007aff;
+        color: white;
+        border-color: #0051b3;
+      }
+
+      button:active {
+        opacity: 0.8;
+      }
+
+      .hint {
+        font-size: 12px;
+        color: #666;
+        margin-top: 4px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="titlebar"></div>
+    <div class="container">
+      <div class="preference-group">
+        <div class="preference-title">Shortcut Key</div>
+        <div class="shortcut-control">
+          <div id="shortcutDisplay" class="shortcut-display">Loading...</div>
+          <button id="recordBtn">Record</button>
+        </div>
+        <div class="hint">
+          Click 'Record' and press your desired key combination. Click 'Stop'
+          when done.
+        </div>
+      </div>
+      <div class="button-container">
+        <button id="cancelBtn">Cancel</button>
+        <button id="saveBtn" class="primary">Save</button>
+      </div>
+    </div>
+    <script>
+      const { ipcRenderer } = require('electron')
+      const shortcutDisplay = document.getElementById('shortcutDisplay')
+      const recordBtn = document.getElementById('recordBtn')
+      const saveBtn = document.getElementById('saveBtn')
+      const cancelBtn = document.getElementById('cancelBtn')
+
+      let isRecording = false
+      let currentShortcut = ''
+      let newShortcut = ''
+
+      ipcRenderer.invoke('get-shortcut').then(shortcut => {
+        currentShortcut = shortcut
+        shortcutDisplay.textContent = shortcut
+      })
+
+      recordBtn.addEventListener('click', () => {
+        if (!isRecording) {
+          isRecording = true
+          recordBtn.textContent = 'Stop'
+          shortcutDisplay.classList.add('recording')
+          shortcutDisplay.textContent = 'Type your shortcut...'
+          ipcRenderer.send('start-recording')
+        } else {
+          stopRecording()
+        }
+      })
+
+      function stopRecording() {
+        isRecording = false
+        recordBtn.textContent = 'Record'
+        shortcutDisplay.classList.remove('recording')
+        ipcRenderer.send('stop-recording')
+      }
+
+      ipcRenderer.on('shortcut-recording', (_, shortcut) => {
+        if (isRecording) {
+          shortcutDisplay.textContent = shortcut || 'Type your shortcut...'
+        }
+      })
+
+      ipcRenderer.on('shortcut-recorded', (_, shortcut) => {
+        newShortcut = shortcut
+        shortcutDisplay.textContent = shortcut
+      })
+
+      saveBtn.addEventListener('click', () => {
+        if (newShortcut) {
+          ipcRenderer.send('set-shortcut', newShortcut)
+        }
+        ipcRenderer.send('close-preferences')
+      })
+
+      cancelBtn.addEventListener('click', () => {
+        if (isRecording) {
+          stopRecording()
+        }
+        shortcutDisplay.textContent = currentShortcut
+        ipcRenderer.send('close-preferences')
+      })
+
+      window.addEventListener('beforeunload', () => {
+        if (isRecording) {
+          stopRecording()
+        }
+      })
+    </script>
+  </body>
+</html>
