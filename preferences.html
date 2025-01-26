@@ -97,6 +97,40 @@
         color: #666;
         margin-top: 4px;
       }
+      .volume-control {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .slider {
+        flex-grow: 1;
+        height: 4px;
+        border-radius: 2px;
+        background: #ddd;
+        outline: none;
+        -webkit-appearance: none;
+      }
+
+      .slider::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        background: #007aff;
+        cursor: pointer;
+      }
+
+      .volume-value {
+        font-family:
+          ui-monospace,
+          SFMono-Regular,
+          SF Mono,
+          Menlo,
+          monospace;
+        color: #666;
+        min-width: 4em;
+      }
     </style>
   </head>
   <body>
@@ -113,6 +147,24 @@
           when done.
         </div>
       </div>
+
+      <div class="preference-group">
+        <div class="preference-title">Volume</div>
+        <div class="volume-control">
+          <input
+            type="range"
+            id="volumeSlider"
+            min="0"
+            max="100"
+            step="1"
+            value="50"
+            class="slider"
+          />
+          <span id="volumeValue" class="volume-value">50%</span>
+        </div>
+        <div class="hint">Adjust the volume of the ping sound</div>
+      </div>
+
       <div class="button-container">
         <button id="cancelBtn">Cancel</button>
         <button id="saveBtn" class="primary">Save</button>
@@ -129,11 +181,13 @@
       let currentShortcut = ''
       let newShortcut = ''
 
+      // Get initial shortcut
       ipcRenderer.invoke('get-shortcut').then(shortcut => {
         currentShortcut = shortcut
         shortcutDisplay.textContent = shortcut
       })
 
+      // Handle recording
       recordBtn.addEventListener('click', () => {
         if (!isRecording) {
           isRecording = true
@@ -155,7 +209,8 @@
 
       ipcRenderer.on('shortcut-recording', (_, shortcut) => {
         if (isRecording) {
-          shortcutDisplay.textContent = shortcut || 'Type your shortcut...'
+          shortcutDisplay.textContent =
+            shortcut || 'Type your shortcut or click mouse buttons...'
         }
       })
 
@@ -183,6 +238,78 @@
         if (isRecording) {
           stopRecording()
         }
+      })
+
+      const volumeSlider = document.getElementById('volumeSlider')
+      const volumeValue = document.getElementById('volumeValue')
+
+      // Get initial volume
+      ipcRenderer.invoke('get-volume').then(volume => {
+        volumeSlider.value = volume
+        volumeValue.textContent = `${Math.round(volume * 100)}%`
+      })
+
+      // Convert slider percentage (0-100) to gain value (0-20)
+      function percentToGain(percent) {
+        // Base gain of 10.0 at 50%
+        // Max gain of 20.0 at 100%
+        // Linear scaling around the base value
+        if (percent <= 50) {
+          return (percent / 50) * 10 // 0-50% maps to 0-10 gain
+        } else {
+          return 10 + ((percent - 50) / 50) * 10 // 51-100% maps to 10-20 gain
+        }
+      }
+
+      // Convert gain value (0-20) to slider percentage (0-100)
+      function gainToPercent(gain) {
+        if (gain <= 10) {
+          return (gain / 10) * 50 // 0-10 gain maps to 0-50%
+        } else {
+          return 50 + ((gain - 10) / 10) * 50 // 10-20 gain maps to 51-100%
+        }
+      }
+
+      // Update slider event handler
+      volumeSlider.addEventListener('input', () => {
+        const percent = parseInt(volumeSlider.value)
+        const gain = percentToGain(percent)
+        volumeValue.textContent = `${percent}%`
+        ipcRenderer.send('set-volume', gain)
+      })
+
+      // Update initial volume setter
+      ipcRenderer.invoke('get-volume').then(gain => {
+        const percent = Math.round(gainToPercent(gain))
+        volumeSlider.value = percent
+        volumeValue.textContent = `${percent}%`
+      })
+
+      // Update save button to also save volume
+      // Update save button handler - use percentToGain
+      saveBtn.addEventListener('click', () => {
+        if (newShortcut) {
+          ipcRenderer.send('set-shortcut', newShortcut)
+        }
+        const percent = parseInt(volumeSlider.value)
+        const gain = percentToGain(percent) // Convert to gain before saving
+        ipcRenderer.send('set-volume', gain)
+        ipcRenderer.send('close-preferences')
+      })
+
+      // Keep only this correct version that uses gainToPercent
+      ipcRenderer.invoke('get-volume').then(gain => {
+        const percent = Math.round(gainToPercent(gain))
+        volumeSlider.value = percent
+        volumeValue.textContent = `${percent}%`
+      })
+
+      // Update slider event handler
+      volumeSlider.addEventListener('input', () => {
+        const percent = parseInt(volumeSlider.value)
+        const gain = percentToGain(percent)
+        volumeValue.textContent = `${percent}%`
+        ipcRenderer.send('set-volume', gain)
       })
     </script>
   </body>

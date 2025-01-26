@@ -26,6 +26,7 @@ let currentModifiers = new Set()
 const store = new Store({
   defaults: {
     shortcut: 'CommandOrControl+Y',
+    volume: 10.0,
   },
 })
 
@@ -176,6 +177,14 @@ function registerShortcut(shortcut) {
   }
 }
 
+ipcMain.handle('get-volume', () => {
+  return store.get('volume')
+})
+
+ipcMain.on('set-volume', (_, volume) => {
+  store.set('volume', volume)
+})
+
 ipcMain.handle('get-shortcut', () => {
   return store.get('shortcut')
 })
@@ -190,6 +199,12 @@ ipcMain.on('start-recording', () => {
   currentlyPressedKeys.clear()
   currentModifiers.clear()
 
+  if (preferencesWindow) {
+    preferencesWindow.webContents.executeJavaScript(
+      'window.isRecording = true;'
+    )
+  }
+
   const handleKeyboard = (e, input) => {
     if (!isRecordingShortcut) return
 
@@ -197,40 +212,20 @@ ipcMain.on('start-recording', () => {
       const key = convertKeyName(input.key)
 
       if (key === 'Control' || input.key === 'Control') {
-        if (currentModifiers.has('Control')) {
-          currentModifiers.delete('Control')
-        } else {
-          currentModifiers.add('Control')
-        }
+        currentModifiers.add('Control')
       }
       if (key === 'Meta' || input.key === 'Meta' || key === 'Command') {
-        if (currentModifiers.has('Command')) {
-          currentModifiers.delete('Command')
-        } else {
-          currentModifiers.add('Command')
-        }
+        currentModifiers.add('Command')
       }
       if (key === 'Alt' || input.key === 'Alt') {
-        if (currentModifiers.has('Alt')) {
-          currentModifiers.delete('Alt')
-        } else {
-          currentModifiers.add('Alt')
-        }
+        currentModifiers.add('Alt')
       }
       if (key === 'Shift' || input.key === 'Shift') {
-        if (currentModifiers.has('Shift')) {
-          currentModifiers.delete('Shift')
-        } else {
-          currentModifiers.add('Shift')
-        }
+        currentModifiers.add('Shift')
       }
 
       if (!['Control', 'Shift', 'Alt', 'Meta', 'Command'].includes(key)) {
-        if (currentlyPressedKeys.has(key)) {
-          currentlyPressedKeys.delete(key)
-        } else {
-          currentlyPressedKeys.add(key)
-        }
+        currentlyPressedKeys.add(key)
       }
 
       updateShortcutDisplay()
@@ -245,6 +240,9 @@ ipcMain.on('start-recording', () => {
 ipcMain.on('stop-recording', () => {
   isRecordingShortcut = false
   if (preferencesWindow) {
+    preferencesWindow.webContents.executeJavaScript(
+      'window.isRecording = false;'
+    )
     preferencesWindow.webContents.removeAllListeners('before-input-event')
 
     const modifierArray = Array.from(currentModifiers)

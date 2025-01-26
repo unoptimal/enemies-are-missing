@@ -14,14 +14,26 @@
     </style>
   </head>
   <body>
-    <video autoplay preload="auto">
-      <source src="ping-trimmed.webm" type="video/webm" />
+    <video id="videoElement" autoplay preload="auto">
+      <source src="ping.webm" type="video/webm" />
     </video>
     <script>
-      const video = document.querySelector('video')
-      const audio = new Audio('ping.webm')
-      audio.preload = 'auto'
-      video.onplay = () => audio.play()
+      const video = document.querySelector('#videoElement')
+
+      // Create audio context and gain node
+      const audioContext = new AudioContext()
+      const source = audioContext.createMediaElementSource(video) // Use video's audio
+      const gainNode = audioContext.createGain()
+
+      // Get the volume from electron store
+      const { ipcRenderer } = require('electron')
+      ipcRenderer.invoke('get-volume').then(volume => {
+        gainNode.gain.value = volume
+      })
+
+      // Connect the audio graph
+      source.connect(gainNode)
+      gainNode.connect(audioContext.destination)
     </script>
   </body>
 </html>
