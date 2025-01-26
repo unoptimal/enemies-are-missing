@@ -12,6 +12,42 @@
         -webkit-user-select: none;
       }
 
+      .container {
+        max-width: 340px;
+        margin: 20px auto 0;
+        padding: 20px 20px 12px;
+      }
+
+      .preference-group {
+        margin-bottom: 24px;
+      }
+
+      .preference-title {
+        font-weight: 600;
+        margin-bottom: 12px;
+        color: #333;
+      }
+
+      .volume-control {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 4px;
+      }
+
+      .size-control {
+        display: flex;
+        gap: 24px;
+        padding: 4px 0;
+      }
+
+      .button-container {
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+        margin-top: 20px;
+      }
+
       .titlebar {
         -webkit-app-region: drag;
         height: 38px;
@@ -21,22 +57,16 @@
         top: 0;
         left: 0;
         right: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
       }
 
-      .container {
-        max-width: 400px;
-        margin: 48px auto 0;
-        padding: 20px;
-      }
-
-      .preference-group {
-        margin-bottom: 20px;
-      }
-
-      .preference-title {
+      .titlebar::after {
+        content: 'Preferences';
+        color: #666;
+        font-size: 13px;
         font-weight: 500;
-        margin-bottom: 10px;
-        color: #333;
       }
 
       .shortcut-control {
@@ -66,13 +96,6 @@
         color: #007aff;
       }
 
-      .button-container {
-        display: flex;
-        justify-content: flex-end;
-        gap: 10px;
-        margin-top: 20px;
-      }
-
       button {
         padding: 6px 12px;
         border-radius: 6px;
@@ -96,11 +119,6 @@
         font-size: 12px;
         color: #666;
         margin-top: 4px;
-      }
-      .volume-control {
-        display: flex;
-        align-items: center;
-        gap: 10px;
       }
 
       .slider {
@@ -130,6 +148,17 @@
           monospace;
         color: #666;
         min-width: 4em;
+      }
+
+      .size-option {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        cursor: pointer;
+      }
+
+      .size-option input[type='radio'] {
+        margin: 0;
       }
     </style>
   </head>
@@ -165,6 +194,25 @@
         <div class="hint">Adjust the volume of the ping sound</div>
       </div>
 
+      <div class="preference-group">
+        <div class="preference-title">Ping Size</div>
+        <div class="size-control">
+          <label class="size-option">
+            <input type="radio" name="size" value="small" />
+            <span>Small</span>
+          </label>
+          <label class="size-option">
+            <input type="radio" name="size" value="medium" />
+            <span>Medium</span>
+          </label>
+          <label class="size-option">
+            <input type="radio" name="size" value="large" />
+            <span>Large</span>
+          </label>
+        </div>
+        <div class="hint">Select the size of the ping indicator</div>
+      </div>
+
       <div class="button-container">
         <button id="cancelBtn">Cancel</button>
         <button id="saveBtn" class="primary">Save</button>
@@ -181,13 +229,11 @@
       let currentShortcut = ''
       let newShortcut = ''
 
-      // Get initial shortcut
       ipcRenderer.invoke('get-shortcut').then(shortcut => {
         currentShortcut = shortcut
         shortcutDisplay.textContent = shortcut
       })
 
-      // Handle recording
       recordBtn.addEventListener('click', () => {
         if (!isRecording) {
           isRecording = true
@@ -219,13 +265,6 @@
         shortcutDisplay.textContent = shortcut
       })
 
-      saveBtn.addEventListener('click', () => {
-        if (newShortcut) {
-          ipcRenderer.send('set-shortcut', newShortcut)
-        }
-        ipcRenderer.send('close-preferences')
-      })
-
       cancelBtn.addEventListener('click', () => {
         if (isRecording) {
           stopRecording()
@@ -243,34 +282,22 @@
       const volumeSlider = document.getElementById('volumeSlider')
       const volumeValue = document.getElementById('volumeValue')
 
-      // Get initial volume
-      ipcRenderer.invoke('get-volume').then(volume => {
-        volumeSlider.value = volume
-        volumeValue.textContent = `${Math.round(volume * 100)}%`
-      })
-
-      // Convert slider percentage (0-100) to gain value (0-20)
       function percentToGain(percent) {
-        // Base gain of 10.0 at 50%
-        // Max gain of 20.0 at 100%
-        // Linear scaling around the base value
         if (percent <= 50) {
-          return (percent / 50) * 10 // 0-50% maps to 0-10 gain
+          return (percent / 50) * 15
         } else {
-          return 10 + ((percent - 50) / 50) * 10 // 51-100% maps to 10-20 gain
+          return 15 + ((percent - 50) / 50) * 15
         }
       }
 
-      // Convert gain value (0-20) to slider percentage (0-100)
       function gainToPercent(gain) {
-        if (gain <= 10) {
-          return (gain / 10) * 50 // 0-10 gain maps to 0-50%
+        if (gain <= 15) {
+          return (gain / 15) * 50
         } else {
-          return 50 + ((gain - 10) / 10) * 50 // 10-20 gain maps to 51-100%
+          return 50 + ((gain - 15) / 15) * 50
         }
       }
 
-      // Update slider event handler
       volumeSlider.addEventListener('input', () => {
         const percent = parseInt(volumeSlider.value)
         const gain = percentToGain(percent)
@@ -278,38 +305,39 @@
         ipcRenderer.send('set-volume', gain)
       })
 
-      // Update initial volume setter
       ipcRenderer.invoke('get-volume').then(gain => {
         const percent = Math.round(gainToPercent(gain))
         volumeSlider.value = percent
         volumeValue.textContent = `${percent}%`
       })
 
-      // Update save button to also save volume
-      // Update save button handler - use percentToGain
+      const sizeInputs = document.querySelectorAll('input[name="size"]')
+
+      ipcRenderer.invoke('get-size').then(size => {
+        const radio = document.querySelector(`input[value="${size}"]`)
+        if (radio) radio.checked = true
+      })
+
+      sizeInputs.forEach(input => {
+        input.addEventListener('change', e => {
+          if (e.target.checked) {
+            ipcRenderer.send('set-size', e.target.value)
+          }
+        })
+      })
+
       saveBtn.addEventListener('click', () => {
         if (newShortcut) {
           ipcRenderer.send('set-shortcut', newShortcut)
         }
         const percent = parseInt(volumeSlider.value)
-        const gain = percentToGain(percent) // Convert to gain before saving
-        ipcRenderer.send('set-volume', gain)
-        ipcRenderer.send('close-preferences')
-      })
-
-      // Keep only this correct version that uses gainToPercent
-      ipcRenderer.invoke('get-volume').then(gain => {
-        const percent = Math.round(gainToPercent(gain))
-        volumeSlider.value = percent
-        volumeValue.textContent = `${percent}%`
-      })
-
-      // Update slider event handler
-      volumeSlider.addEventListener('input', () => {
-        const percent = parseInt(volumeSlider.value)
         const gain = percentToGain(percent)
-        volumeValue.textContent = `${percent}%`
         ipcRenderer.send('set-volume', gain)
+        const selectedSize = document.querySelector(
+          'input[name="size"]:checked'
+        ).value
+        ipcRenderer.send('set-size', selectedSize)
+        ipcRenderer.send('close-preferences')
       })
     </script>
   </body>

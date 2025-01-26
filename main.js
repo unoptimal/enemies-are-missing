@@ -16,6 +16,7 @@ const __dirname = path.dirname(__filename)
 
 let overlayWindows = new Set()
 let tray = null
+let aboutWindow = null
 let preferencesWindow = null
 let isRecordingShortcut = false
 let currentShortcut = 'CommandOrControl+Y'
@@ -26,9 +27,38 @@ let currentModifiers = new Set()
 const store = new Store({
   defaults: {
     shortcut: 'CommandOrControl+Y',
-    volume: 10.0,
+    volume: 15.0,
+    size: 'small',
   },
 })
+
+function createAboutWindow() {
+  if (aboutWindow) {
+    aboutWindow.focus()
+    return
+  }
+
+  aboutWindow = new BrowserWindow({
+    width: 380,
+    height: 200,
+    resizable: false,
+    minimizable: false,
+    maximizable: false,
+    fullscreenable: false,
+    title: 'About',
+    titleBarStyle: 'hiddenInset',
+    webPreferences: {
+      nodeIntegration: true,
+      contextIsolation: false,
+    },
+  })
+
+  aboutWindow.loadFile('about.html')
+
+  aboutWindow.on('closed', () => {
+    aboutWindow = null
+  })
+}
 
 function createOverlayWindow(x, y) {
   const overlay = new BrowserWindow({
@@ -73,12 +103,13 @@ function createPreferencesWindow() {
   }
 
   preferencesWindow = new BrowserWindow({
-    width: 440,
-    height: 200,
+    width: 380,
+    height: 450,
     resizable: false,
     minimizable: false,
     maximizable: false,
     fullscreenable: false,
+    title: 'Preferences',
     titleBarStyle: 'hiddenInset',
     webPreferences: {
       nodeIntegration: true,
@@ -102,7 +133,9 @@ function createTray() {
   const contextMenu = Menu.buildFromTemplate([
     {
       label: 'About Enemies Are Missing',
-      enabled: true,
+      click: () => {
+        createAboutWindow()
+      },
     },
     {
       type: 'separator',
@@ -176,6 +209,14 @@ function registerShortcut(shortcut) {
     return false
   }
 }
+
+ipcMain.handle('get-size', () => {
+  return store.get('size')
+})
+
+ipcMain.on('set-size', (_, size) => {
+  store.set('size', size)
+})
 
 ipcMain.handle('get-volume', () => {
   return store.get('volume')
