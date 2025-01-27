@@ -1,27 +1,107 @@
 {
-  "name": "mac-ping-overlay",
+  "name": "enemies-are-missing",
   "version": "1.0.0",
-  "description": "Ping overlay for Mac",
+  "description": "Use League Of Legends' most infamous ping outside of the game",
   "main": "main.js",
   "type": "module",
+  "author": {
+    "name": "unoptimal",
+    "email": "unoptimalblogs@gmail.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/unoptimal/enemies-are-missing.git"
+  },
   "scripts": {
     "start": "electron .",
-    "build": "electron-builder"
+    "build": "electron-builder build",
+    "build:mac": "electron-builder build --mac",
+    "build:win": "electron-builder build --win",
+    "build:linux": "electron-builder build --linux"
   },
   "build": {
-    "appId": "com.yourname.ping-overlay",
-    "productName": "Ping Overlay",
+    "appId": "com.unoptimal.enemies-are-missing",
+    "productName": "Enemies Are Missing",
     "mac": {
-      "target": "dmg",
-      "category": "public.app-category.utilities"
-    }
+      "category": "public.app-category.utilities",
+      "target": [
+        {
+          "target": "dmg",
+          "arch": [
+            "x64",
+            "arm64"
+          ]
+        },
+        {
+          "target": "zip",
+          "arch": [
+            "x64",
+            "arm64"
+          ]
+        }
+      ],
+      "icon": "build/icon.png"
+    },
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64",
+            "arm64"
+          ]
+        },
+        {
+          "target": "portable",
+          "arch": [
+            "x64",
+            "arm64"
+          ]
+        }
+      ],
+      "icon": "build/icon.png"
+    },
+    "linux": {
+      "target": [
+        {
+          "target": "AppImage",
+          "arch": [
+            "x64",
+            "arm64"
+          ]
+        },
+        {
+          "target": "deb",
+          "arch": [
+            "x64",
+            "arm64"
+          ]
+        }
+      ],
+      "category": "Utility",
+      "icon": "build/icon.png"
+    },
+    "files": [
+      "**/*",
+      "!**/node_modules/*/{CHANGELOG.md,README.md,README,readme.md,readme}",
+      "!**/node_modules/*/{test,__tests__,tests,powered-test,example,examples}",
+      "!**/node_modules/*.d.ts",
+      "!**/node_modules/.bin",
+      "!**/*.{iml,o,hprof,orig,pyc,pyo,rbc,swp,csproj,sln,xproj}",
+      "!.editorconfig",
+      "!**/._*",
+      "!**/{.DS_Store,.git,.hg,.svn,CVS,RCS,SCCS,.gitignore,.gitattributes}",
+      "!**/{__pycache__,thumbs.db,.flowconfig,.idea,.vs,.nyc_output}",
+      "!**/{appveyor.yml,.travis.yml,circle.yml}",
+      "!**/{npm-debug.log,yarn.lock,.yarn-integrity,.yarn-metadata.json}"
+    ]
+  },
+  "dependencies": {
+    "electron-store": "^10.0.0"
   },
   "devDependencies": {
     "electron": "^34.0.1",
     "electron-builder": "^25.1.8",
     "prettier": "^3.4.2"
-  },
-  "dependencies": {
-    "electron-store": "^8.1.0"
   }
 }

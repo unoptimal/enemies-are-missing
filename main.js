@@ -26,7 +26,7 @@ let currentModifiers = new Set()
 
 const store = new Store({
   defaults: {
-    shortcut: 'CommandOrControl+Y',
+    shortcut: 'CommandOrControl+G',
     volume: 15.0,
     size: 'small',
   },
@@ -61,14 +61,52 @@ function createAboutWindow() {
 }
 
 function createOverlayWindow(x, y) {
+  const displays = screen.getAllDisplays()
+  const cursorDisplay = displays.find(display => {
+    const {
+      x: displayX,
+      y: displayY,
+      width: displayWidth,
+      height: displayHeight,
+    } = display.bounds
+    return (
+      x >= displayX &&
+      x <= displayX + displayWidth &&
+      y >= displayY &&
+      y <= displayY + displayHeight
+    )
+  })
+
+  if (!cursorDisplay) return
+
+  const { width: screenWidth, height: screenHeight } = cursorDisplay.bounds
+  const overlayWidth = 256
+  const overlayHeight = 256
+
+  const adjustedX = Math.max(
+    cursorDisplay.bounds.x,
+    Math.min(
+      x - overlayWidth / 2,
+      cursorDisplay.bounds.x + screenWidth - overlayWidth
+    )
+  )
+  const adjustedY = Math.max(
+    cursorDisplay.bounds.y,
+    Math.min(
+      y - overlayHeight / 2,
+      cursorDisplay.bounds.y + screenHeight - overlayHeight
+    )
+  )
+
   const overlay = new BrowserWindow({
-    width: 640,
-    height: 360,
-    x: x - 320,
-    y: y - 180,
+    width: overlayWidth,
+    height: overlayHeight,
+    x: adjustedX,
+    y: adjustedY,
     frame: false,
     transparent: true,
     alwaysOnTop: true,
+    type: 'toolbar',
     skipTaskbar: true,
     hasShadow: false,
     webPreferences: {
@@ -78,9 +116,7 @@ function createOverlayWindow(x, y) {
   })
 
   overlayWindows.add(overlay)
-
   overlay.setIgnoreMouseEvents(true)
-
   overlay.loadFile('overlay.html')
   overlay.setBackgroundColor('#00000000')
 
@@ -128,7 +164,12 @@ function createPreferencesWindow() {
 }
 
 function createTray() {
-  tray = new Tray(path.join(__dirname, 'icon.png'))
+  const iconPath =
+    process.platform === 'darwin'
+      ? path.join(__dirname, 'assets', 'icon-mac.png')
+      : path.join(__dirname, 'assets', 'icon-win.png')
+
+  tray = new Tray(iconPath)
 
   const contextMenu = Menu.buildFromTemplate([
     {
@@ -157,7 +198,7 @@ function createTray() {
     },
   ])
 
-  tray.setToolTip('Ping Overlay')
+  tray.setToolTip('Enemies Are Missing')
   tray.setContextMenu(contextMenu)
 }
 
