@@ -7,16 +7,27 @@
         overflow: hidden;
         margin: 0;
       }
+      .video-container {
+        overflow: hidden;
+        width: 128px;
+        height: 226px;
+        position: relative;
+      }
       video {
-        width: 100%;
-        height: 100%;
+        position: absolute;
+        left: -256px;
+        top: -36px;
+        width: 640px;
+        height: 360px;
       }
     </style>
   </head>
   <body>
-    <video id="videoElement" autoplay preload="auto">
-      <source src="" type="video/webm" />
-    </video>
+    <div class="video-container">
+      <video id="videoElement" autoplay preload="auto">
+        <source src="" type="video/webm" />
+      </video>
+    </div>
     <script>
       const video = document.querySelector('#videoElement')
       const source = video.querySelector('source')

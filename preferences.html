@@ -3,12 +3,45 @@
   <head>
     <title>Preferences</title>
     <style>
+      :root {
+        --background: #ffffff;
+        --text: #545353;
+        --text-secondary: #666666;
+        --border: #dddddd;
+        --titlebar-bg: #f7f7f7;
+        --shortcut-bg: #f5f5f5;
+        --button-bg: #ffffff;
+        --slider-bg: #dddddd;
+        --primary-button: #007aff;
+        --primary-button-border: #0051b3;
+        --shortcut-recording-bg: #007aff15;
+        --shortcut-recording-text: #007aff;
+      }
+
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --background: #1e1e1e;
+          --text: #ffffff;
+          --text-secondary: #a0a0a0;
+          --border: #404040;
+          --titlebar-bg: #2d2d2d;
+          --shortcut-bg: #2d2d2d;
+          --button-bg: #323232;
+          --slider-bg: #404040;
+          --primary-button: #0a84ff;
+          --primary-button-border: #0066cc;
+          --shortcut-recording-bg: #0a84ff15;
+          --shortcut-recording-text: #0a84ff;
+        }
+      }
+
       body {
         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
           Helvetica, Arial, sans-serif;
         padding: 20px;
         margin: 0;
-        background-color: #ffffff;
+        background-color: var(--background);
+        color: var(--text);
         -webkit-user-select: none;
       }
 
@@ -25,7 +58,7 @@
       .preference-title {
         font-weight: 600;
         margin-bottom: 12px;
-        color: #333;
+        color: var(--text);
       }
 
       .volume-control {
@@ -51,8 +84,8 @@
       .titlebar {
         -webkit-app-region: drag;
         height: 38px;
-        background: #f7f7f7;
-        border-bottom: 1px solid #ddd;
+        background: var(--titlebar-bg);
+        border-bottom: 1px solid var(--border);
         position: fixed;
         top: 0;
         left: 0;
@@ -64,7 +97,7 @@
 
       .titlebar::after {
         content: 'Preferences';
-        color: #666;
+        color: var(--text-secondary);
         font-size: 13px;
         font-weight: 500;
       }
@@ -78,8 +111,8 @@
       .shortcut-display {
         flex-grow: 1;
         padding: 6px 12px;
-        background: #f5f5f5;
-        border: 1px solid #ddd;
+        background: var(--shortcut-bg);
+        border: 1px solid var(--border);
         border-radius: 6px;
         font-family:
           ui-monospace,
@@ -87,28 +120,29 @@
           SF Mono,
           Menlo,
           monospace;
-        color: #333;
+        color: var(--text);
       }
 
       .shortcut-display.recording {
-        background: #007aff15;
-        border-color: #007aff;
-        color: #007aff;
+        background: var(--shortcut-recording-bg);
+        border-color: var(--primary-button);
+        color: var(--shortcut-recording-text);
       }
 
       button {
         padding: 6px 12px;
         border-radius: 6px;
-        border: 1px solid #ddd;
-        background: #ffffff;
+        border: 1px solid var(--border);
+        background: var(--button-bg);
+        color: var(--text);
         font-size: 13px;
         cursor: pointer;
       }
 
       button.primary {
-        background: #007aff;
+        background: var(--primary-button);
         color: white;
-        border-color: #0051b3;
+        border-color: var(--primary-button-border);
       }
 
       button:active {
@@ -117,15 +151,15 @@
 
       .hint {
         font-size: 12px;
-        color: #666;
-        margin-top: 4px;
+        color: var(--text-secondary);
+        margin-bottom: 10px;
       }
 
       .slider {
         flex-grow: 1;
         height: 4px;
         border-radius: 2px;
-        background: #ddd;
+        background: var(--slider-bg);
         outline: none;
         -webkit-appearance: none;
       }
@@ -135,7 +169,7 @@
         width: 16px;
         height: 16px;
         border-radius: 50%;
-        background: #007aff;
+        background: var(--primary-button);
         cursor: pointer;
       }
 
@@ -146,7 +180,7 @@
           SF Mono,
           Menlo,
           monospace;
-        color: #666;
+        color: var(--text-secondary);
         min-width: 4em;
       }
 
@@ -155,6 +189,7 @@
         align-items: center;
         gap: 6px;
         cursor: pointer;
+        color: var(--text);
       }
 
       .size-option input[type='radio'] {
@@ -167,13 +202,13 @@
     <div class="container">
       <div class="preference-group">
         <div class="preference-title">Shortcut Key</div>
-        <div class="shortcut-control">
-          <div id="shortcutDisplay" class="shortcut-display">Loading...</div>
-          <button id="recordBtn">Record</button>
-        </div>
         <div class="hint">
           Click 'Record' and press your desired key combination. Click 'Stop'
           when done.
+        </div>
+        <div class="shortcut-control">
+          <div id="shortcutDisplay" class="shortcut-display">Loading...</div>
+          <button id="recordBtn">Record</button>
         </div>
       </div>
 
@@ -191,7 +226,6 @@
           />
           <span id="volumeValue" class="volume-value">50%</span>
         </div>
-        <div class="hint">Adjust the volume of the ping sound</div>
       </div>
 
       <div class="preference-group">
@@ -210,7 +244,6 @@
             <span>Large</span>
           </label>
         </div>
-        <div class="hint">Select the size of the ping indicator</div>
       </div>
 
       <div class="button-container">
@@ -282,33 +315,25 @@
       const volumeSlider = document.getElementById('volumeSlider')
       const volumeValue = document.getElementById('volumeValue')
 
-      function percentToGain(percent) {
-        if (percent <= 50) {
-          return (percent / 50) * 15
-        } else {
-          return 15 + ((percent - 50) / 50) * 15
-        }
+      function mapSliderToGain(sliderValue) {
+        return sliderValue / 100
       }
 
-      function gainToPercent(gain) {
-        if (gain <= 15) {
-          return (gain / 15) * 50
-        } else {
-          return 50 + ((gain - 15) / 15) * 50
-        }
+      function mapGainToSlider(gain) {
+        return Math.round(gain * 100)
       }
 
       volumeSlider.addEventListener('input', () => {
-        const percent = parseInt(volumeSlider.value)
-        const gain = percentToGain(percent)
-        volumeValue.textContent = `${percent}%`
+        const sliderValue = parseInt(volumeSlider.value)
+        const gain = mapSliderToGain(sliderValue)
+        volumeValue.textContent = `${sliderValue}%`
         ipcRenderer.send('set-volume', gain)
       })
 
       ipcRenderer.invoke('get-volume').then(gain => {
-        const percent = Math.round(gainToPercent(gain))
-        volumeSlider.value = percent
-        volumeValue.textContent = `${percent}%`
+        const sliderValue = mapGainToSlider(gain)
+        volumeSlider.value = sliderValue
+        volumeValue.textContent = `${sliderValue}%`
       })
 
       const sizeInputs = document.querySelectorAll('input[name="size"]')

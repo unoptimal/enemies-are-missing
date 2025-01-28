@@ -3,27 +3,52 @@
   <head>
     <title>About</title>
     <style>
+      :root {
+        --background: #ffffff;
+        --text: #333333;
+        --text-secondary: #666666;
+        --border: #dddddd;
+        --titlebar-bg: #f7f7f7;
+        --link-color: #007aff;
+      }
+
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --background: #1e1e1e;
+          --text: #ffffff;
+          --text-secondary: #a0a0a0;
+          --border: #404040;
+          --titlebar-bg: #2d2d2d;
+          --link-color: #0a84ff;
+        }
+      }
+
       body {
         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
           Helvetica, Arial, sans-serif;
-        padding: 20px;
+        padding: 0;
         margin: 0;
-        background-color: #ffffff;
+        background-color: var(--background);
+        color: var(--text);
         -webkit-user-select: none;
       }
 
       .container {
-        max-width: 340px;
-        margin: 20px auto 0;
-        padding: 20px;
-        text-align: center;
+        max-width: 320px;
+        height: calc(280px - 38px);
+        margin: 38px auto 0;
+        padding: 0 20px;
+        display: flex;
+        gap: 20px;
+        align-items: center;
+        justify-content: center;
       }
 
       .titlebar {
         -webkit-app-region: drag;
         height: 38px;
-        background: #f7f7f7;
-        border-bottom: 1px solid #ddd;
+        background: var(--titlebar-bg);
+        border-bottom: 1px solid var(--border);
         position: fixed;
         top: 0;
         left: 0;
@@ -35,23 +60,79 @@
 
       .titlebar::after {
         content: 'About';
-        color: #666;
+        color: var(--text-secondary);
         font-size: 13px;
         font-weight: 500;
+      }
+
+      .app-icon {
+        width: 128px;
+        height: 128px;
+        flex-shrink: 0;
+      }
+
+      .app-info {
+        text-align: left;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        width: 172px;
       }
 
       .app-name {
         font-size: 16px;
         font-weight: 600;
-        color: #333;
-        margin-bottom: 12px;
+        color: var(--text);
+      }
+
+      .description {
+        font-size: 13px;
+        color: var(--text-secondary);
+        line-height: 1.4;
+      }
+
+      .meta-info {
+        font-size: 12px;
+        color: var(--text-secondary);
+      }
+
+      a {
+        color: var(--link-color);
+        text-decoration: none;
       }
     </style>
   </head>
   <body>
     <div class="titlebar"></div>
     <div class="container">
-      <div class="app-name">Enemies Are Missing</div>
+      <img src="build/icon.png" alt="App Icon" class="app-icon" />
+      <div class="app-info">
+        <div class="app-name">Enemies Are Missing</div>
+        <div class="description">
+          Use League Of Legends' most infamous ping outside of the game.
+        </div>
+        <div class="meta-info">Version 1.0.0</div>
+        <div class="meta-info">
+          <a
+            href="https://github.com/unoptimal/enemies-are-missing"
+            target="_blank"
+            >Source code repository</a
+          >
+        </div>
+        <div class="meta-info">
+          Made by <a href="https://unoptimal.com" target="_blank">unoptimal</a>
+        </div>
+      </div>
     </div>
+    <script>
+      const { shell } = require('electron')
+
+      document.addEventListener('click', event => {
+        if (event.target.tagName === 'A') {
+          event.preventDefault()
+          shell.openExternal(event.target.href)
+        }
+      })
+    </script>
   </body>
 </html>

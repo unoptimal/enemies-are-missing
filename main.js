@@ -27,7 +27,7 @@ let currentModifiers = new Set()
 const store = new Store({
   defaults: {
     shortcut: 'CommandOrControl+G',
-    volume: 15.0,
+    volume: 0.5,
     size: 'small',
   },
 })
@@ -40,7 +40,7 @@ function createAboutWindow() {
 
   aboutWindow = new BrowserWindow({
     width: 380,
-    height: 200,
+    height: 280,
     resizable: false,
     minimizable: false,
     maximizable: false,
@@ -80,8 +80,8 @@ function createOverlayWindow(x, y) {
   if (!cursorDisplay) return
 
   const { width: screenWidth, height: screenHeight } = cursorDisplay.bounds
-  const overlayWidth = 256
-  const overlayHeight = 256
+  const overlayWidth = 128
+  const overlayHeight = 226
 
   const adjustedX = Math.max(
     cursorDisplay.bounds.x,
@@ -93,7 +93,7 @@ function createOverlayWindow(x, y) {
   const adjustedY = Math.max(
     cursorDisplay.bounds.y,
     Math.min(
-      y - overlayHeight / 2,
+      y - overlayHeight / 2 - 50,
       cursorDisplay.bounds.y + screenHeight - overlayHeight
     )
   )
@@ -140,7 +140,7 @@ function createPreferencesWindow() {
 
   preferencesWindow = new BrowserWindow({
     width: 380,
-    height: 450,
+    height: 410,
     resizable: false,
     minimizable: false,
     maximizable: false,
