@@ -4,7 +4,8 @@ yarn-debug.log
 yarn-error.log
 
 dist/
-build/
+/build/*
+!/build/icon.png
 
 .DS_Store
 .AppleDouble

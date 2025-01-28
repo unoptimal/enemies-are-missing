@@ -36,7 +36,7 @@ const store = new Store({
 function createFirstLaunchWindow() {
   const windowOptions = {
     width: 400,
-    height: process.platform === 'darwin' ? 300 : 270,
+    height: 320,
     resizable: false,
     webPreferences: {
       nodeIntegration: true,
@@ -60,7 +60,7 @@ function createAboutWindow() {
 
   const windowOptions = {
     width: 380,
-    height: process.platform === 'darwin' ? 280 : 250,
+    height: 280,
     resizable: false,
     minimizable: false,
     maximizable: false,
@@ -71,12 +71,8 @@ function createAboutWindow() {
     },
   }
 
-  if (process.platform === 'darwin') {
-    windowOptions.title = 'About'
-    windowOptions.titleBarStyle = 'hiddenInset'
-  } else {
+  if (process.platform !== 'darwin') {
     windowOptions.autoHideMenuBar = true
-    windowOptions.frame = true
   }
 
   aboutWindow = new BrowserWindow(windowOptions)
@@ -84,6 +80,40 @@ function createAboutWindow() {
 
   aboutWindow.on('closed', () => {
     aboutWindow = null
+  })
+}
+
+function createPreferencesWindow() {
+  if (preferencesWindow) {
+    preferencesWindow.focus()
+    return
+  }
+
+  const windowOptions = {
+    width: 380,
+    height: 420,
+    resizable: false,
+    minimizable: false,
+    maximizable: false,
+    fullscreenable: false,
+    webPreferences: {
+      nodeIntegration: true,
+      contextIsolation: false,
+    },
+  }
+
+  if (process.platform !== 'darwin') {
+    windowOptions.autoHideMenuBar = true
+  }
+
+  preferencesWindow = new BrowserWindow(windowOptions)
+  preferencesWindow.loadFile('preferences.html')
+
+  preferencesWindow.on('closed', () => {
+    preferencesWindow = null
+    isRecordingShortcut = false
+    currentlyPressedKeys.clear()
+    currentModifiers.clear()
   })
 }
 
@@ -156,44 +186,6 @@ function createOverlayWindow(x, y) {
 
   overlay.on('closed', () => {
     overlayWindows.delete(overlay)
-  })
-}
-
-function createPreferencesWindow() {
-  if (preferencesWindow) {
-    preferencesWindow.focus()
-    return
-  }
-
-  const windowOptions = {
-    width: 380,
-    height: process.platform === 'darwin' ? 410 : 380,
-    resizable: false,
-    minimizable: false,
-    maximizable: false,
-    fullscreenable: false,
-    webPreferences: {
-      nodeIntegration: true,
-      contextIsolation: false,
-    },
-  }
-
-  if (process.platform === 'darwin') {
-    windowOptions.title = 'Preferences'
-    windowOptions.titleBarStyle = 'hiddenInset'
-  } else {
-    windowOptions.autoHideMenuBar = true
-    windowOptions.frame = true
-  }
-
-  preferencesWindow = new BrowserWindow(windowOptions)
-  preferencesWindow.loadFile('preferences.html')
-
-  preferencesWindow.on('closed', () => {
-    preferencesWindow = null
-    isRecordingShortcut = false
-    currentlyPressedKeys.clear()
-    currentModifiers.clear()
   })
 }
 
@@ -385,7 +377,7 @@ app.dock?.hide()
 app.whenReady().then(() => {
   createTray()
 
-  // store.set('hasLaunched', false) // REMOVE FOR BUILD
+  store.set('hasLaunched', false) // REMOVE FOR BUILD
   const isFirstLaunch = !store.get('hasLaunched')
   if (isFirstLaunch) {
     createFirstLaunchWindow()

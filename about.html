@@ -8,7 +8,6 @@
         --text: #333333;
         --text-secondary: #666666;
         --border: #dddddd;
-        --titlebar-bg: #f7f7f7;
         --link-color: #007aff;
       }
 
@@ -18,7 +17,6 @@
           --text: #ffffff;
           --text-secondary: #a0a0a0;
           --border: #404040;
-          --titlebar-bg: #2d2d2d;
           --link-color: #0a84ff;
         }
       }
@@ -35,34 +33,12 @@
 
       .container {
         max-width: 320px;
-        height: calc(280px - 38px);
-        margin: 38px auto 0;
         padding: 0 20px;
         display: flex;
         gap: 20px;
         align-items: center;
         justify-content: center;
-      }
-
-      .titlebar {
-        -webkit-app-region: drag;
-        height: 38px;
-        background: var(--titlebar-bg);
-        border-bottom: 1px solid var(--border);
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-      }
-
-      .titlebar::after {
-        content: 'About';
-        color: var(--text-secondary);
-        font-size: 13px;
-        font-weight: 500;
+        height: 100vh;
       }
 
       .app-icon {
@@ -103,7 +79,6 @@
     </style>
   </head>
   <body>
-    <div class="titlebar"></div>
     <div class="container">
       <img id="app-icon" alt="App Icon" class="app-icon" />
       <div class="app-info">

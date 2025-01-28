@@ -8,7 +8,6 @@
         --text: #545353;
         --text-secondary: #666666;
         --border: #dddddd;
-        --titlebar-bg: #f7f7f7;
         --shortcut-bg: #f5f5f5;
         --button-bg: #ffffff;
         --slider-bg: #dddddd;
@@ -24,7 +23,6 @@
           --text: #ffffff;
           --text-secondary: #a0a0a0;
           --border: #404040;
-          --titlebar-bg: #2d2d2d;
           --shortcut-bg: #2d2d2d;
           --button-bg: #323232;
           --slider-bg: #404040;
@@ -47,8 +45,8 @@
 
       .container {
         max-width: 340px;
-        margin: 20px auto 0;
-        padding: 20px 20px 12px;
+        margin: 0 auto;
+        padding: 20px;
       }
 
       .preference-group {
@@ -79,27 +77,6 @@
         justify-content: flex-end;
         gap: 10px;
         margin-top: 20px;
-      }
-
-      .titlebar {
-        -webkit-app-region: drag;
-        height: 38px;
-        background: var(--titlebar-bg);
-        border-bottom: 1px solid var(--border);
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-      }
-
-      .titlebar::after {
-        content: 'Preferences';
-        color: var(--text-secondary);
-        font-size: 13px;
-        font-weight: 500;
       }
 
       .shortcut-control {
@@ -198,7 +175,6 @@
     </style>
   </head>
   <body>
-    <div class="titlebar"></div>
     <div class="container">
       <div class="preference-group">
         <div class="preference-title">Shortcut Key</div>
