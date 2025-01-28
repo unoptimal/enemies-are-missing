@@ -1,0 +1,104 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Welcome to Enemies Are Missing!</title>
+    <style>
+      :root {
+        --background: #ffffff;
+        --text: #545353; /* Updated to match preferences */
+        --text-secondary: #666666;
+        --border: #dddddd;
+        --primary-button: #007aff; /* Updated to match preferences naming */
+        --primary-button-border: #0051b3;
+      }
+
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --background: #1e1e1e;
+          --text: #ffffff;
+          --text-secondary: #a0a0a0;
+          --border: #404040;
+          --primary-button: #0a84ff;
+          --primary-button-border: #0066cc;
+        }
+      }
+
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+          Helvetica, Arial, sans-serif;
+        padding: 0;
+        margin: 0;
+        background-color: var(--background);
+        color: var(--text);
+        -webkit-user-select: none;
+        height: 100vh; /* Ensure full height */
+        display: flex; /* Help with centering */
+        align-items: center;
+        justify-content: center;
+      }
+
+      .container {
+        max-width: 340px;
+        padding: 0 20px;
+        text-align: center;
+      }
+
+      .app-icon {
+        width: 64px;
+        height: 64px;
+        margin-bottom: 16px;
+      }
+
+      h2 {
+        font-size: 16px;
+        font-weight: 600;
+        margin: 0 0 16px 0;
+        color: var(--text);
+      }
+
+      p {
+        font-size: 13px;
+        line-height: 1.4;
+        color: var(--text-secondary);
+        margin: 0 0 8px 0;
+      }
+
+      button {
+        margin-top: 24px;
+        padding: 6px 12px; /* Updated to match preferences padding */
+        background: var(--primary-button);
+        color: white;
+        border: 1px solid var(--primary-button-border);
+        border-radius: 6px;
+        font-size: 13px;
+        cursor: pointer;
+        font-family: inherit;
+      }
+
+      button:hover {
+        opacity: 0.9;
+      }
+
+      button:active {
+        opacity: 0.8;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <img id="app-icon" alt="App Icon" class="app-icon" />
+      <h2>Welcome to Enemies Are Missing!</h2>
+      <p>The app is now running in your system tray.</p>
+      <p>
+        Look for the icon in the top-right corner (Mac/Linux) or bottom-right
+        corner (Windows) of your screen.
+      </p>
+      <button onclick="window.close()">Got it!</button>
+    </div>
+    <script>
+      const path = require('path')
+      const iconPath = path.join(__dirname, 'assets', 'icon.png')
+      document.getElementById('app-icon').src = iconPath
+    </script>
+  </body>
+</html>

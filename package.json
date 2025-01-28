@@ -1,7 +1,7 @@
 {
   "name": "enemies-are-missing",
   "version": "1.0.0",
-  "description": "Use League Of Legends' most infamous ping outside of the game",
+  "description": "Use League Of Legends' most infamous ping on your desktop",
   "main": "main.js",
   "type": "module",
   "author": {

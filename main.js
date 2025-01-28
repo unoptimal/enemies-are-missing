@@ -29,8 +29,28 @@ const store = new Store({
     shortcut: 'CommandOrControl+G',
     volume: 0.5,
     size: 'small',
+    hasLaunched: false,
   },
 })
+
+function createFirstLaunchWindow() {
+  const windowOptions = {
+    width: 400,
+    height: process.platform === 'darwin' ? 300 : 270,
+    resizable: false,
+    webPreferences: {
+      nodeIntegration: true,
+      contextIsolation: false,
+    },
+  }
+
+  if (process.platform !== 'darwin') {
+    windowOptions.autoHideMenuBar = true
+  }
+
+  const win = new BrowserWindow(windowOptions)
+  win.loadFile('first-launch.html')
+}
 
 function createAboutWindow() {
   if (aboutWindow) {
@@ -38,21 +58,28 @@ function createAboutWindow() {
     return
   }
 
-  aboutWindow = new BrowserWindow({
+  const windowOptions = {
     width: 380,
-    height: 280,
+    height: process.platform === 'darwin' ? 280 : 250,
     resizable: false,
     minimizable: false,
     maximizable: false,
     fullscreenable: false,
-    title: 'About',
-    titleBarStyle: 'hiddenInset',
     webPreferences: {
       nodeIntegration: true,
       contextIsolation: false,
     },
-  })
+  }
 
+  if (process.platform === 'darwin') {
+    windowOptions.title = 'About'
+    windowOptions.titleBarStyle = 'hiddenInset'
+  } else {
+    windowOptions.autoHideMenuBar = true
+    windowOptions.frame = true
+  }
+
+  aboutWindow = new BrowserWindow(windowOptions)
   aboutWindow.loadFile('about.html')
 
   aboutWindow.on('closed', () => {
@@ -138,21 +165,28 @@ function createPreferencesWindow() {
     return
   }
 
-  preferencesWindow = new BrowserWindow({
+  const windowOptions = {
     width: 380,
-    height: 410,
+    height: process.platform === 'darwin' ? 410 : 380,
     resizable: false,
     minimizable: false,
     maximizable: false,
     fullscreenable: false,
-    title: 'Preferences',
-    titleBarStyle: 'hiddenInset',
     webPreferences: {
       nodeIntegration: true,
       contextIsolation: false,
     },
-  })
+  }
 
+  if (process.platform === 'darwin') {
+    windowOptions.title = 'Preferences'
+    windowOptions.titleBarStyle = 'hiddenInset'
+  } else {
+    windowOptions.autoHideMenuBar = true
+    windowOptions.frame = true
+  }
+
+  preferencesWindow = new BrowserWindow(windowOptions)
   preferencesWindow.loadFile('preferences.html')
 
   preferencesWindow.on('closed', () => {
@@ -350,6 +384,13 @@ app.dock?.hide()
 
 app.whenReady().then(() => {
   createTray()
+
+  // store.set('hasLaunched', false) // REMOVE FOR BUILD
+  const isFirstLaunch = !store.get('hasLaunched')
+  if (isFirstLaunch) {
+    createFirstLaunchWindow()
+    store.set('hasLaunched', true)
+  }
 
   const savedShortcut = store.get('shortcut')
   registerShortcut(savedShortcut)

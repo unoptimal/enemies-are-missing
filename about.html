@@ -105,11 +105,11 @@
   <body>
     <div class="titlebar"></div>
     <div class="container">
-      <img src="build/icon.png" alt="App Icon" class="app-icon" />
+      <img id="app-icon" alt="App Icon" class="app-icon" />
       <div class="app-info">
         <div class="app-name">Enemies Are Missing</div>
         <div class="description">
-          Use League Of Legends' most infamous ping outside of the game.
+          Use League Of Legends' most infamous ping on your desktop.
         </div>
         <div class="meta-info">Version 1.0.0</div>
         <div class="meta-info">
@@ -126,6 +126,10 @@
     </div>
     <script>
       const { shell } = require('electron')
+      const path = require('path')
+
+      const iconPath = path.join(__dirname, 'assets', 'icon.png')
+      document.getElementById('app-icon').src = iconPath
 
       document.addEventListener('click', event => {
         if (event.target.tagName === 'A') {
