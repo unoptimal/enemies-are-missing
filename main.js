@@ -38,6 +38,8 @@ function createFirstLaunchWindow() {
     width: 400,
     height: 320,
     resizable: false,
+    show: false,
+    backgroundColor: '#232323',
     webPreferences: {
       nodeIntegration: true,
       contextIsolation: false,
@@ -50,6 +52,11 @@ function createFirstLaunchWindow() {
   }
 
   const win = new BrowserWindow(windowOptions)
+
+  win.once('ready-to-show', () => {
+    win.show()
+  })
+
   win.loadFile('first-launch.html')
 }
 
@@ -66,6 +73,8 @@ function createAboutWindow() {
     minimizable: false,
     maximizable: false,
     fullscreenable: false,
+    show: false,
+    backgroundColor: '#232323',
     webPreferences: {
       nodeIntegration: true,
       contextIsolation: false,
@@ -79,6 +88,10 @@ function createAboutWindow() {
 
   aboutWindow = new BrowserWindow(windowOptions)
   aboutWindow.loadFile('about.html')
+
+  aboutWindow.once('ready-to-show', () => {
+    aboutWindow.show()
+  })
 
   aboutWindow.on('closed', () => {
     aboutWindow = null
@@ -98,6 +111,8 @@ function createPreferencesWindow() {
     minimizable: false,
     maximizable: false,
     fullscreenable: false,
+    show: false,
+    backgroundColor: '#232323',
     webPreferences: {
       nodeIntegration: true,
       contextIsolation: false,
@@ -110,6 +125,11 @@ function createPreferencesWindow() {
   }
 
   preferencesWindow = new BrowserWindow(windowOptions)
+
+  preferencesWindow.once('ready-to-show', () => {
+    preferencesWindow.show()
+  })
+
   preferencesWindow.loadFile('preferences.html')
 
   preferencesWindow.on('closed', () => {
