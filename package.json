@@ -40,7 +40,7 @@
           ]
         }
       ],
-      "icon": "build/icon.png"
+      "icon": "build/icon.icns"
     },
     "win": {
       "target": [
@@ -59,7 +59,7 @@
           ]
         }
       ],
-      "icon": "build/icon.png"
+      "icon": "build/icon.ico"
     },
     "linux": {
       "target": [

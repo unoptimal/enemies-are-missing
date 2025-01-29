@@ -45,6 +45,7 @@ function createFirstLaunchWindow() {
   }
 
   if (process.platform !== 'darwin') {
+    windowOptions.icon = path.join(__dirname, 'build/icon.ico')
     windowOptions.autoHideMenuBar = true
   }
 
@@ -72,6 +73,7 @@ function createAboutWindow() {
   }
 
   if (process.platform !== 'darwin') {
+    windowOptions.icon = path.join(__dirname, 'build/icon.ico')
     windowOptions.autoHideMenuBar = true
   }
 
@@ -91,7 +93,7 @@ function createPreferencesWindow() {
 
   const windowOptions = {
     width: 380,
-    height: 420,
+    height: process.platform === 'darwin' ? 420 : 440,
     resizable: false,
     minimizable: false,
     maximizable: false,
@@ -103,6 +105,7 @@ function createPreferencesWindow() {
   }
 
   if (process.platform !== 'darwin') {
+    windowOptions.icon = path.join(__dirname, 'build/icon.ico')
     windowOptions.autoHideMenuBar = true
   }
 
