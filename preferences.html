@@ -222,6 +222,20 @@
         </div>
       </div>
 
+      <div class="preference-group">
+        <label class="size-option">
+          <input type="checkbox" id="pingDelay" />
+          <span>Ping delay?</span>
+        </label>
+      </div>
+
+      <div class="preference-group">
+        <label class="size-option">
+          <input type="checkbox" id="rateLimit" />
+          <span>Rate limit?</span>
+        </label>
+      </div>
+
       <div class="button-container">
         <button id="cancelBtn">Cancel</button>
         <button id="saveBtn" class="primary">Save</button>
@@ -327,17 +341,38 @@
         })
       })
 
+      const pingDelayToggle = document.getElementById('pingDelay')
+      const rateLimitToggle = document.getElementById('rateLimit')
+
+      ipcRenderer.invoke('get-ping-delay').then(enabled => {
+        pingDelayToggle.checked = enabled
+      })
+
+      ipcRenderer.invoke('get-rate-limit').then(enabled => {
+        rateLimitToggle.checked = enabled
+      })
+
+      pingDelayToggle.addEventListener('change', e => {
+        ipcRenderer.send('set-ping-delay', e.target.checked)
+      })
+
+      rateLimitToggle.addEventListener('change', e => {
+        ipcRenderer.send('set-rate-limit', e.target.checked)
+      })
+
       saveBtn.addEventListener('click', () => {
         if (newShortcut) {
           ipcRenderer.send('set-shortcut', newShortcut)
         }
         const percent = parseInt(volumeSlider.value)
-        const gain = percentToGain(percent)
+        const gain = mapSliderToGain(percent)
         ipcRenderer.send('set-volume', gain)
         const selectedSize = document.querySelector(
           'input[name="size"]:checked'
         ).value
         ipcRenderer.send('set-size', selectedSize)
+        ipcRenderer.send('set-ping-delay', pingDelayToggle.checked)
+        ipcRenderer.send('set-rate-limit', rateLimitToggle.checked)
         ipcRenderer.send('close-preferences')
       })
     </script>

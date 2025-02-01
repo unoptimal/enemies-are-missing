@@ -1,0 +1,68 @@
+<!doctype html>
+<html>
+  <head>
+    <style>
+      body {
+        margin: 0;
+        padding: 20px;
+        background: transparent;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+          sans-serif;
+        -webkit-app-region: drag;
+        user-select: none;
+        overflow: hidden;
+        height: 100vh;
+      }
+      #warningContainer {
+        position: fixed;
+        bottom: 1rem;
+        left: 1rem;
+        z-index: 9999;
+        display: flex;
+        flex-direction: column-reverse;
+        padding-top: 20px;
+        max-height: calc(100vh - 40px);
+      }
+      .warning {
+        color: #e8aa2e;
+        border-radius: 4px;
+        font-size: 14px;
+        margin: 2px 0;
+        padding-top: 4px;
+        opacity: 1;
+        transition: opacity 0.3s ease-out;
+      }
+      .warning.fade-out {
+        opacity: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="warningContainer"></div>
+    <script>
+      const { ipcRenderer } = require('electron')
+      const container = document.getElementById('warningContainer')
+      const MAX_WARNINGS = 9
+
+      ipcRenderer.on('show-warning', () => {
+        if (container.children.length >= MAX_WARNINGS) {
+          container.removeChild(container.lastChild)
+        }
+
+        const warning = document.createElement('div')
+        warning.className = 'warning'
+        warning.textContent = 'You must wait before issuing more pings.'
+        container.insertBefore(warning, container.firstChild)
+
+        setTimeout(() => {
+          warning.classList.add('fade-out')
+          setTimeout(() => {
+            if (warning.parentNode === container) {
+              container.removeChild(warning)
+            }
+          }, 300)
+        }, 7000)
+      })
+    </script>
+  </body>
+</html>

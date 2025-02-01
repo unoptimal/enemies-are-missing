@@ -24,12 +24,101 @@ let currentShortcut = 'CommandOrControl+Y'
 let currentlyPressedKeys = new Set()
 let currentModifiers = new Set()
 
+class PingLimiter {
+  constructor() {
+    this.pings = []
+    this.isLocked = false
+    this.lockoutDuration = 0
+    this.PING_WINDOW = 5000
+    this.MAX_PINGS = 6
+    this.LOCKOUT_DURATIONS = [6, 12, 16, 20, 24]
+    this.warningWindow = null
+  }
+
+  initializeWarningWindow() {
+    if (this.warningWindow) return
+
+    this.warningWindow = new BrowserWindow({
+      width: 300,
+      height: 400,
+      frame: false,
+      transparent: true,
+      alwaysOnTop: true,
+      skipTaskbar: true,
+      webPreferences: {
+        nodeIntegration: true,
+        contextIsolation: false,
+      },
+    })
+
+    const display = screen.getPrimaryDisplay()
+    const { width, height } = display.workAreaSize
+
+    this.warningWindow.setPosition(20, height - 420)
+    this.warningWindow.loadFile('warning.html')
+    this.warningWindow.setIgnoreMouseEvents(true)
+  }
+
+  cleanupOldPings() {
+    const now = Date.now()
+    this.pings = this.pings.filter(
+      pingTime => now - pingTime < this.PING_WINDOW
+    )
+  }
+
+  calculateLockoutDuration() {
+    const violationCount = Math.min(
+      this.LOCKOUT_DURATIONS.length - 1,
+      Math.floor(this.pings.length / this.MAX_PINGS)
+    )
+    return this.LOCKOUT_DURATIONS[violationCount] * 1000
+  }
+
+  showWarning() {
+    if (!this.warningWindow || this.warningWindow.isDestroyed()) {
+      this.initializeWarningWindow()
+    }
+    this.warningWindow.webContents.send('show-warning')
+  }
+
+  startLockoutTimer() {
+    setTimeout(() => {
+      this.isLocked = false
+    }, this.lockoutDuration)
+  }
+
+  attemptPing() {
+    const now = Date.now()
+    this.cleanupOldPings()
+
+    if (this.isLocked) {
+      this.showWarning()
+      return false
+    }
+
+    this.pings.push(now)
+
+    if (this.pings.length >= this.MAX_PINGS) {
+      this.lockoutDuration = this.calculateLockoutDuration()
+      this.isLocked = true
+      this.startLockoutTimer()
+      return true
+    }
+
+    return true
+  }
+}
+
+const pingLimiter = new PingLimiter()
+
 const store = new Store({
   defaults: {
     shortcut: 'CommandOrControl+G',
     volume: 0.5,
     size: 'small',
     hasLaunched: false,
+    pingDelay: false,
+    rateLimit: false,
   },
 })
 
@@ -106,7 +195,7 @@ function createPreferencesWindow() {
 
   const windowOptions = {
     width: 380,
-    height: process.platform === 'darwin' ? 420 : 440,
+    height: process.platform === 'darwin' ? 510 : 530,
     resizable: false,
     minimizable: false,
     maximizable: false,
@@ -140,7 +229,22 @@ function createPreferencesWindow() {
   })
 }
 
+let lastPingTime = 0
 function createOverlayWindow(x, y) {
+  const now = Date.now()
+  const pingDelay = store.get('pingDelay')
+  const rateLimit = store.get('rateLimit')
+
+  if (pingDelay && now - lastPingTime < 300) {
+    return
+  }
+
+  if (rateLimit && !pingLimiter.attemptPing()) {
+    return
+  }
+
+  lastPingTime = now
+
   const displays = screen.getAllDisplays()
   const cursorDisplay = displays.find(display => {
     const {
@@ -395,12 +499,28 @@ ipcMain.on('close-preferences', () => {
   }
 })
 
+ipcMain.handle('get-ping-delay', () => {
+  return store.get('pingDelay')
+})
+
+ipcMain.on('set-ping-delay', (_, enabled) => {
+  store.set('pingDelay', enabled)
+})
+
+ipcMain.handle('get-rate-limit', () => {
+  return store.get('rateLimit')
+})
+
+ipcMain.on('set-rate-limit', (_, enabled) => {
+  store.set('rateLimit', enabled)
+})
+
 app.dock?.hide()
 
 app.whenReady().then(() => {
   createTray()
+  pingLimiter.initializeWarningWindow()
 
-  store.set('hasLaunched', false) // REMOVE FOR BUILD
   const isFirstLaunch = !store.get('hasLaunched')
   if (isFirstLaunch) {
     createFirstLaunchWindow()
